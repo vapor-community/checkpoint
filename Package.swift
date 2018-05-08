@@ -25,6 +25,6 @@ let package = Package(
             dependencies: ["Menkyo", "Vapor"]),
         .testTarget(
             name: "CheckpointTests",
-            dependencies: ["Checkpoint"]),
+            dependencies: ["Checkpoint", "Vapor"]),
     ]
 )

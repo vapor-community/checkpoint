@@ -3,12 +3,12 @@ import Menkyo
 import CNIOOpenSSL
 import Crypto
 
-class Checkpoint: Middleware {
-    
+public struct Checkpoint: Middleware, Service {
+
     private var signatureCertChainUrlHeader = HTTPHeaderName("SignatureCertChainUrl")
     private var signatureHeader = HTTPHeaderName("Signature")
     
-    func respond(to request: Request, chainingTo next: Responder) throws -> EventLoopFuture<Response> {
+    public func respond(to request: Request, chainingTo next: Responder) throws -> EventLoopFuture<Response> {
         guard let bodyData = request.http.body.data,
             let signatureCertUrl = request.http.headers.firstValue(name: signatureCertChainUrlHeader),
             let signature = request.http.headers.firstValue(name: signatureHeader)
@@ -20,7 +20,7 @@ class Checkpoint: Middleware {
         let pemHTTPRequest = HTTPRequest(method: .GET, url: signatureCertUrl)
         let pemRequest = Request(http: pemHTTPRequest, using: request.sharedContainer)
 
-        return try next.respond(to: pemRequest).flatMap { response in
+        return try request.make(Client.self).send(pemRequest).flatMap { response in
             guard let data = response.http.body.data,
                 let pemString = String(data: data, encoding: .utf8),
                 let cert = self.getCertificate(pemString: pemString) else { throw Abort(.badRequest) }
@@ -34,6 +34,8 @@ class Checkpoint: Middleware {
             guard try self.validate(signature: signature, ofBody: bodyData, usingCertificate: pemString) else {
                 throw Abort(.badRequest)
             }
+
+             //return try next.respond(to: request)
 
             //verify timestamp
             return try request.content.decode(AmazonRequest.self).flatMap { amazonReq in
