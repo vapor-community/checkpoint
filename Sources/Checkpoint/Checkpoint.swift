@@ -35,7 +35,7 @@ public struct Checkpoint: Middleware, Service {
                 throw Abort(.badRequest)
             }
 
-             //return try next.respond(to: request)
+             //I sortreturn try next.respond(to: request)
 
             //verify timestamp
             return try request.content.decode(AmazonRequest.self).flatMap { amazonReq in
@@ -66,8 +66,14 @@ public struct Checkpoint: Middleware, Service {
 
     private func getCertificate(pemString: String) -> Certificate? {
         let bio = BIO_new(BIO_s_mem())
+        defer {
+            BIO_free(bio)
+        }
         BIO_puts(bio, pemString)
         guard let certificate = PEM_read_bio_X509(bio, nil, nil, nil) else { return nil }
+        defer {
+            X509_free(certificate)
+        }
         return readCertificateFile(certificate)
     }
     
