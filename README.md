@@ -6,6 +6,10 @@ Checkpoint verifies incoming Alexa requests as requested By Amazon - [Amazon doc
   ```swift
   .package(url: "https://github.com/vapor-community/checkpoint.git", from: "0.1.0")
   ```
+  and add to dependencies
+  ```swift
+  dependencies: ["Vapor", ..., "Checkpoint"]
+  ```
   
   2. You should only use this middleware on the route Amazon will be calling for your skill. To do this you can do something like this:
   ```swift
